@@ -1,4 +1,4 @@
-# Climate Smart Indonesia Multi-disease Prediction System
+# Climate Smart Indonesia Multi-Disease Prediction System
 
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Project Status](https://img.shields.io/badge/status-active-brightgreen)
