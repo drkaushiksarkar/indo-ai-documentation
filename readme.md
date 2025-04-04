@@ -202,24 +202,6 @@ Our models demonstrate strong predictive performance for dengue incidence across
 | Hybrid LSTM-GRU-Attention| 0.8733    | 0.53    | 19.45%     | 1.94          |
 | Conditional GAN          | 0.8412    | 0.56    | 18.72%     | 1.97          |
 
-
-
-## Contributors
-- Dr. Kaushik Sarkar
-- Naufal Prawironegoro
-
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- The ClimateSmart Indonesia initiative was launched in 2023 with funding support from the philanthropy of the President of the UAE through the Reaching The Last Mile.
-- The distributed AI and EDGE infrastructure is developed with funding support from the Patrick J. McGovern Foundation.
-- Special thanks to KORIKA, the Ministry of Health, Indonesia and BMKG for data and strategic inputs.
-- Powered by TensorFlow, PyTorch, and MLflow
-
 # Create a virtual environment
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
@@ -237,7 +219,6 @@ python -m training.train --model hybrid --data data/processed/merged_monthly_den
 # Make predictions with a trained model
 python -m evaluation.predict --model models/saved_models/hybrid_model.h5 --data data/processed/test_data.csv
 ```
-
 
 ## Deployment
 
@@ -262,12 +243,18 @@ docker-compose up -d
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+## Developers
+- Dr. Kaushik Sarkar (Project Director and Chief Scientist)
+- Naufal Prawironegoro (Project Consultant)
+
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 
-- Project developed as part of research on climate-sensitive disease prediction
-- Special thanks to contributors and institutions providing the climate and dengue incidence data
+- The ClimateSmart Indonesia initiative was launched in 2023 with funding support from the philanthropy of the President of the UAE through the Reaching The Last Mile.
+- The distributed AI and EDGE infrastructure is developed with funding support from the Patrick J. McGovern Foundation.
+- Special thanks to KORIKA, the Ministry of Health, Indonesia and BMKG for data and strategic inputs.
 - Powered by TensorFlow, PyTorch, and MLflow
