@@ -11,7 +11,7 @@ The models encode high-dimensional meteorological features into a lower-dimensio
 ## Table of Contents
 
 - [Data Sources](#data-sources)
-- [Mathematical Model](#Mathematical-Model)
+- [Mathematical Model](#mathematical-model)
 - [Architecture](#architecture)
   - [Basic VAE](#basic-vae)
   - [Conditional Attention VAE](#conditional-attention-vae)
@@ -133,7 +133,7 @@ The VAE is trained to minimize a loss function that consists of two components:
 
 The VAE loss function is:
 
-$$\mathcal{L}(\theta, \phi; x) = \mathbb{E}_{q_\phi(z|x)}\left[\log p_\theta(x|z)\right] - D_{KL}(q_\phi(z|x) || p(z))$$
+$$\mathcal{L}(\theta, \phi; x) = \mathbb{E}_{q_\phi(z|x)}\left[\log p_\theta(x|z)\right] - D_{KL}(q_\phi(z|x) \parallel p(z))$$
 
 Where:
 - $p(z) = \mathcal{N}(0, I)$ is the prior distribution
@@ -141,7 +141,7 @@ Where:
 
 For a Gaussian latent distribution, the KL divergence has a closed-form solution:
 
-$$D_{KL}(q_\phi(z|x) || p(z)) = \frac{1}{2} \sum_{j=1}^J \left(1 + \log \sigma_j^2 - \mu_j^2 - \sigma_j^2\right)$$
+$$D_{KL}(q_\phi(z|x) \parallel p(z)) = \frac{1}{2} \sum_{j=1}^J \left(1 + \log \sigma_j^2 - \mu_j^2 - \sigma_j^2\right)$$
 
 Where $J$ is the dimensionality of the latent space.
 
@@ -150,8 +150,6 @@ Where $J$ is the dimensionality of the latent space.
 ### 3.1 LSTM Model Formulation
 
 Long Short-Term Memory (LSTM) networks are a type of recurrent neural network (RNN) capable of learning long-term dependencies in sequential data. The LSTM unit contains a cell state and three gates: input, forget, and output gates.
-
-
 
 ### 3.2 Hybrid LSTM-GRU-Attention
 
@@ -170,12 +168,12 @@ Where:
 
 For the hybrid model, the LSTM outputs are fed into the GRU:
 
-$$h_t^{LSTM} = \text{LSTM}(x_t, h_{t-1}^{LSTM})$$
-$$h_t^{GRU} = \text{GRU}(h_t^{LSTM}, h_{t-1}^{GRU})$$
+$$h_t^{\text{LSTM}} = \text{LSTM}(x_t, h_{t-1}^{\text{LSTM}})$$
+$$h_t^{\text{GRU}} = \text{GRU}(h_t^{\text{LSTM}}, h_{t-1}^{\text{GRU}})$$
 
 Multi-head attention is then applied to the GRU outputs:
 
-$$\text{MultiHead}(Q, K, V) = \text{Concat}(\text{head}_1, \text{head}_2, ..., \text{head}_h)W^O$$
+$$\text{MultiHead}(Q, K, V) = \text{Concat}(\text{head}_1, \text{head}_2, \ldots, \text{head}_h)W^O$$
 
 Where:
 - $W_i^Q, W_i^K, W_i^V, W^O$ are parameter matrices
@@ -186,7 +184,7 @@ Our Conditional Generative Adversarial Network (CGAN) approach involves a genera
 
 The adversarial min-max game can be formulated as:
 
-$$\min_G \max_D V(D, G) = \mathbb{E}_{x \sim p_{data}(x)}[\log D(x|c)] + \mathbb{E}_{z \sim p_z(z)}[\log(1 - D(G(z|c)))]$$
+$$\min_G \max_D V(D, G) = \mathbb{E}_{x \sim p_{\text{data}}(x)}[\log D(x|c)] + \mathbb{E}_{z \sim p_z(z)}[\log(1 - D(G(z|c)))]$$
 
 Where:
 - $c$ is the condition (climate and other features)
@@ -196,7 +194,6 @@ Where:
 ## 4. Loss Functions and Optimization
 
 ### 4.1 Symmetric Mean Absolute Percentage Error (SMAPE)
-
 
 In TensorFlow, this is implemented as:
 
@@ -598,7 +595,9 @@ The models are evaluated using several metrics:
 
 3. **Cluster Analysis**:
    - K-means clustering (k=8) on latent space
-   - Visualization of cluster centers and memberships# Dengue Prediction Models using Climate Data and Neural Networks
+   - Visualization of cluster centers and memberships
+
+# Dengue Prediction Models using Climate Data and Neural Networks
 
 ## Table of Contents
 - [Project Overview](#project-overview)
@@ -947,8 +946,6 @@ Planned improvements to the project include:
    - Fine-grained geographic resolution (sub-national)
    - Longer-term forecasting horizons (3-6 months)
 
-
-
 ## License
 
-This project is licensed under the [MIT License](LICENSE) - see the LICENSE file for details.
+This project is licensed under the [MIT License](LICENSE.md) - see the LICENSE file for details.
