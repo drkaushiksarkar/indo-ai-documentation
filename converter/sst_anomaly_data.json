@@ -1,0 +1,243 @@
+{
+  "metadata": {
+    "dimensions": {
+      "T": {
+        "size": 12,
+        "isUnlimited": true
+      },
+      "bnds": {
+        "size": 2,
+        "isUnlimited": false
+      },
+      "X": {
+        "size": 23,
+        "isUnlimited": false
+      },
+      "Y": {
+        "size": 9,
+        "isUnlimited": false
+      }
+    },
+    "attributes": {
+      "CDI": "Climate Data Interface version 2.0.4 (https://mpimet.mpg.de/cdi)",
+      "Conventions": "CF-1.6",
+      "history": "Wed Jun 26 16:24:44 2024: cdo ymonmean sstanom_monthly2021-2023.nc sstanom_clim2021-2023.nc",
+      "CDO": "Climate Data Operators version 2.0.4 (https://mpimet.mpg.de/cdo)"
+    }
+  },
+  "variables": {
+    "T": {
+      "dimensions": [
+        "T"
+      ],
+      "attributes": {
+        "standard_name": "time",
+        "long_name": "Time",
+        "bounds": "T_bnds",
+        "units": "months since 1960-01-01",
+        "calendar": "360_day",
+        "axis": "T"
+      },
+      "shape": [
+        12
+      ],
+      "dtype": "float32",
+      "data": [
+        756.5,
+        757.5,
+        758.5,
+        759.5,
+        760.5,
+        761.5,
+        762.5,
+        763.5,
+        764.5,
+        765.5,
+        766.5,
+        767.5
+      ]
+    },
+    "T_bnds": {
+      "dimensions": [
+        "T",
+        "bnds"
+      ],
+      "attributes": {},
+      "shape": [
+        12,
+        2
+      ],
+      "dtype": "float64",
+      "data": [
+        [
+          732.5,
+          756.5
+        ],
+        [
+          733.5,
+          757.5
+        ],
+        [
+          734.5,
+          758.5
+        ],
+        [
+          735.5,
+          759.5
+        ],
+        [
+          736.5,
+          760.5
+        ],
+        [
+          737.5,
+          761.5
+        ],
+        [
+          738.5,
+          762.5
+        ],
+        [
+          739.5,
+          763.5
+        ],
+        [
+          740.5,
+          764.5
+        ],
+        [
+          741.5,
+          765.5
+        ],
+        [
+          742.5,
+          766.5
+        ],
+        [
+          743.5,
+          767.5
+        ]
+      ]
+    },
+    "X": {
+      "dimensions": [
+        "X"
+      ],
+      "attributes": {
+        "standard_name": "longitude",
+        "long_name": "Longitude",
+        "units": "degree_east",
+        "axis": "X"
+      },
+      "shape": [
+        23
+      ],
+      "dtype": "float32",
+      "data": [
+        -90.0,
+        -92.5,
+        -95.0,
+        -97.5,
+        -100.0,
+        -102.5,
+        -105.0,
+        -107.5,
+        -110.0,
+        -112.5,
+        -115.0,
+        -117.5,
+        -120.0,
+        -122.5,
+        -125.0,
+        -127.5,
+        -130.0,
+        -132.5,
+        -135.0,
+        -137.5,
+        -140.0,
+        -142.5,
+        -145.0
+      ]
+    },
+    "Y": {
+      "dimensions": [
+        "Y"
+      ],
+      "attributes": {
+        "standard_name": "latitude",
+        "long_name": "Latitude",
+        "units": "degree_north",
+        "axis": "Y"
+      },
+      "shape": [
+        9
+      ],
+      "dtype": "float32",
+      "data": [
+        -5.0,
+        -2.5,
+        0.0,
+        2.5,
+        5.0,
+        7.5,
+        10.0,
+        12.5,
+        15.0
+      ]
+    },
+    "pressure": {
+      "dimensions": [
+        "T",
+        "Y",
+        "X"
+      ],
+      "attributes": {
+        "long_name": "Pressure",
+        "units": "Pa",
+        "_FillValue": 9.999000260554009e+20,
+        "missing_value": 9.999000260554009e+20,
+        "pointwidth": 1.0,
+        "subcenter": "NCEP Ensemble Products",
+        "GRIBgridcode": 2,
+        "PDS_TimeRange": 113,
+        "process": "62 wave triangular, 28 layer Spectral model from \"Medium Range Forecast\" run",
+        "gribleveltype": 102,
+        "gribvariable": 1,
+        "gribNumBits": 13,
+        "center": "US Weather Service - National Met. Center",
+        "grib_name": "PRES",
+        "PTVersion": 2,
+        "gribfield": 1,
+        "gribparam": 1,
+        "scale_max": 108300.0,
+        "scale_min": 95947.0,
+        "expires": 1719964800
+      },
+      "shape": [
+        12,
+        9,
+        23
+      ],
+      "dtype": "float32",
+      "data_summary": {
+        "min": 100930.3359375,
+        "max": 101609.6640625,
+        "mean": 101189.21875,
+        "std": 101.48592376708984,
+        "nan_count": 0,
+        "sample": [
+          101215.6640625,
+          101236.3359375,
+          101244.0,
+          101242.3359375,
+          101234.3359375,
+          101229.3359375,
+          101234.3359375,
+          101240.6640625,
+          101236.0,
+          101223.0
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,64 @@
+NetCDF File: DELTA_TASMIN_NEXGDDP_INDO_SSP245_r1i1p1f1.nc
+============================================================
+
+GLOBAL ATTRIBUTES:
+------------------------------------------------------------
+title: Temperature Percentage Change (Near and Future Periods)
+model: cmip6
+scenario: SSP245
+description: This dataset contains the percentage change in temperature for near and future periods based on model projections.
+source: NEX_GDDP-CMIP6
+history: Created using xarray and resampled yearly
+institution: Badan Meteorologi Klimatologi dan Geofisika
+contact_information: Firmansyah.02@bmkg.go.id
+
+DIMENSIONS:
+------------------------------------------------------------
+lat: 84
+lon: 208
+
+VARIABLES:
+------------------------------------------------------------
+lat (float64): lat (84,)
+    _FillValue: nan
+    units: degrees_north
+    standard_name: latitude
+    long_name: latitude
+    axis: Y
+    Data min: -12.875
+    Data max: 7.875
+    Data mean: -2.5
+    Data std: 6.061748235176603
+    NaN count: 0
+    Data sample: [-12.875 -12.625 -12.375 -12.125 -11.875]
+
+lon (float64): lon (208,)
+    _FillValue: nan
+    units: degrees_east
+    standard_name: longitude
+    long_name: longitude
+    axis: X
+    Data min: 92.125
+    Data max: 143.875
+    Data mean: 118.0
+    Data std: 15.010933515274791
+    NaN count: 0
+    Data sample: [92.125 92.375 92.625 92.875 93.125]
+
+NEAR (float32): lat, lon (84, 208)
+    _FillValue: nan
+    Data min: -14.480722427368164
+    Data max: -13.188194274902344
+    Data mean: -13.615828514099121
+    Data std: 0.19271713495254517
+    NaN count: 15012
+    Data sample: [nan nan nan nan nan]
+
+FUTURE (float32): lat, lon (84, 208)
+    _FillValue: nan
+    Data min: -13.328618049621582
+    Data max: -12.025527954101562
+    Data mean: -12.580095291137695
+    Data std: 0.26070430874824524
+    NaN count: 15012
+    Data sample: [nan nan nan nan nan]
