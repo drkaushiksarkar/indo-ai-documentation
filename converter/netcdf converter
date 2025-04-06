@@ -1,0 +1,340 @@
+
+import os
+import json
+import numpy as np
+import pandas as pd
+import xarray as xr
+from netCDF4 import Dataset
+import matplotlib.pyplot as plt
+
+def netcdf_to_json(file_path, output_path=None, max_array_size=1000):
+    """Convert a NetCDF file to JSON format"""
+    
+    # Open the NetCDF file
+    try:
+        # Use the provided file path - using raw string to avoid escape character issues
+        nc = Dataset(file_path, 'r')
+    except Exception as e:
+        print(f"Error opening file {file_path}: {e}")
+        return None
+    
+    # Initialize JSON structure
+    json_data = {
+        "metadata": {
+            "dimensions": {},
+            "attributes": {}
+        },
+        "variables": {}
+    }
+    
+    # Extract dimensions
+    for dim_name, dim in nc.dimensions.items():
+        json_data["metadata"]["dimensions"][dim_name] = {
+            "size": len(dim),
+            "isUnlimited": dim.isunlimited()
+        }
+    
+    # Extract global attributes
+    for attr_name in nc.ncattrs():
+        attr_value = nc.getncattr(attr_name)
+        # Convert numpy types to Python native types
+        if isinstance(attr_value, (np.integer, np.floating, np.bool_)):
+            attr_value = attr_value.item()
+        # Convert numpy arrays to lists
+        elif isinstance(attr_value, np.ndarray):
+            attr_value = attr_value.tolist()
+        json_data["metadata"]["attributes"][attr_name] = attr_value
+    
+    # Extract variables and their attributes
+    for var_name, var in nc.variables.items():
+        # Initialize variable entry
+        json_data["variables"][var_name] = {
+            "dimensions": var.dimensions,
+            "attributes": {},
+            "shape": var.shape,
+            "dtype": str(var.dtype)
+        }
+        
+        # Extract variable attributes
+        for attr_name in var.ncattrs():
+            attr_value = var.getncattr(attr_name)
+            # Convert numpy types to Python native types
+            if isinstance(attr_value, (np.integer, np.floating, np.bool_)):
+                attr_value = attr_value.item()
+            # Convert numpy arrays to lists
+            elif isinstance(attr_value, np.ndarray):
+                attr_value = attr_value.tolist()
+            json_data["variables"][var_name]["attributes"][attr_name] = attr_value
+        
+        # Handle variable data
+        try:
+            # Check if the array is too large
+            if np.prod(var.shape) <= max_array_size:
+                # Include the full data
+                data = var[:]
+                # Convert masked arrays
+                if hasattr(data, 'filled'):
+                    data = data.filled(np.nan)
+                # Convert to Python types
+                if isinstance(data, np.ndarray):
+                    if data.size == 1:
+                        data = data.item()
+                    else:
+                        data = data.tolist()
+                json_data["variables"][var_name]["data"] = data
+            else:
+                # Include data summary
+                data = var[:]
+                if hasattr(data, 'filled'):
+                    data = data.filled(np.nan)
+                
+                # Calculate statistics
+                if np.issubdtype(data.dtype, np.number):
+                    with np.errstate(invalid='ignore'):
+                        json_data["variables"][var_name]["data_summary"] = {
+                            "min": float(np.nanmin(data)) if not np.all(np.isnan(data)) else None,
+                            "max": float(np.nanmax(data)) if not np.all(np.isnan(data)) else None,
+                            "mean": float(np.nanmean(data)) if not np.all(np.isnan(data)) else None,
+                            "std": float(np.nanstd(data)) if not np.all(np.isnan(data)) else None,
+                            "nan_count": int(np.isnan(data).sum()),
+                            "sample": data.flatten()[:10].tolist() if data.size > 0 else []
+                        }
+                else:
+                    # For non-numeric data, just include shape info and a sample
+                    json_data["variables"][var_name]["data_summary"] = {
+                        "sample": str(data.flatten()[:10]) if data.size > 0 else []
+                    }
+        except Exception as e:
+            json_data["variables"][var_name]["data_error"] = str(e)
+    
+    # Close the NetCDF file
+    nc.close()
+    
+    # Save to disk if output_path is provided
+    if output_path:
+        try:
+            with open(output_path, 'w') as f:
+                json.dump(json_data, f, indent=2)
+            print(f"JSON data saved to {output_path}")
+        except Exception as e:
+            print(f"Error saving JSON data to {output_path}: {e}")
+    
+    return json_data
+
+def netcdf_to_text(file_path, output_path=None):
+    """Create a human-readable text summary of a NetCDF file"""
+    
+    # Open the NetCDF file
+    try:
+        nc = Dataset(file_path, 'r')
+    except Exception as e:
+        print(f"Error opening file {file_path}: {e}")
+        return None
+    
+    # Initialize text output
+    text_output = []
+    
+    # File information
+    filename = os.path.basename(file_path)
+    text_output.append(f"NetCDF File: {filename}")
+    text_output.append("=" * 60)
+    text_output.append("")
+    
+    # Global attributes
+    text_output.append("GLOBAL ATTRIBUTES:")
+    text_output.append("-" * 60)
+    for attr_name in nc.ncattrs():
+        text_output.append(f"{attr_name}: {nc.getncattr(attr_name)}")
+    text_output.append("")
+    
+    # Dimensions
+    text_output.append("DIMENSIONS:")
+    text_output.append("-" * 60)
+    for dim_name, dim in nc.dimensions.items():
+        unlimited = " (unlimited)" if dim.isunlimited() else ""
+        text_output.append(f"{dim_name}: {len(dim)}{unlimited}")
+    text_output.append("")
+    
+    # Variables
+    text_output.append("VARIABLES:")
+    text_output.append("-" * 60)
+    for var_name, var in nc.variables.items():
+        # Variable information
+        dims_str = ", ".join([f"{dim}" for dim in var.dimensions])
+        text_output.append(f"{var_name} ({var.dtype}): {dims_str} {var.shape}")
+        
+        # Variable attributes
+        for attr_name in var.ncattrs():
+            text_output.append(f"    {attr_name}: {var.getncattr(attr_name)}")
+        
+        # Data summary for numeric variables
+        try:
+            data = var[:]
+            if hasattr(data, 'filled'):
+                data = data.filled(np.nan)
+                
+            if np.issubdtype(data.dtype, np.number):
+                with np.errstate(invalid='ignore'):
+                    if not np.all(np.isnan(data)):
+                        text_output.append(f"    Data min: {np.nanmin(data)}")
+                        text_output.append(f"    Data max: {np.nanmax(data)}")
+                        text_output.append(f"    Data mean: {np.nanmean(data)}")
+                        text_output.append(f"    Data std: {np.nanstd(data)}")
+                    text_output.append(f"    NaN count: {np.isnan(data).sum()}")
+            
+            # Sample data (first few values)
+            if data.size > 0:
+                sample = data.flatten()[:5]
+                text_output.append(f"    Data sample: {sample}")
+        except Exception as e:
+            text_output.append(f"    Error accessing data: {e}")
+        
+        text_output.append("")
+    
+    # Close the NetCDF file
+    nc.close()
+    
+    # Join all lines to create a single string
+    text_summary = "\n".join(text_output)
+    
+    # Save to disk if output_path is provided
+    if output_path:
+        try:
+            with open(output_path, 'w') as f:
+                f.write(text_summary)
+            print(f"Text summary saved to {output_path}")
+        except Exception as e:
+            print(f"Error saving text summary to {output_path}: {e}")
+    
+    return text_summary
+
+def plot_netcdf(file_path, variable_name=None, time_idx=0):
+    """Create a basic plot of a variable from a NetCDF file"""
+    
+    try:
+        # Open the NetCDF file with xarray for easier plotting
+        ds = xr.open_dataset(file_path)
+        
+        # If no variable name is provided, try to find a suitable one
+        if variable_name is None:
+            # Look for common variable names that might be plotted
+            for name in ['temperature', 'temp', 'tasmin', 'tasmax', 'tas', 
+                         'pr', 'precipitation', 'sst', 'pressure']:
+                for var in ds.data_vars:
+                    if name.lower() in var.lower():
+                        variable_name = var
+                        break
+                if variable_name:
+                    break
+            
+            # If still None, use the first non-coordinate variable
+            if variable_name is None and len(ds.data_vars) > 0:
+                variable_name = list(ds.data_vars.keys())[0]
+        
+        if variable_name not in ds.data_vars:
+            print(f"Variable '{variable_name}' not found in file. Available variables: {list(ds.data_vars.keys())}")
+            return None
+        
+        # Get the variable
+        var = ds[variable_name]
+        
+        # Create figure and axis
+        fig, ax = plt.subplots(figsize=(10, 6))
+        
+        # Plot based on dimensionality
+        if len(var.dims) >= 2:
+            # Check if it has a time dimension
+            if 'time' in var.dims or 'T' in var.dims:
+                time_dim = 'time' if 'time' in var.dims else 'T'
+                if time_idx >= var[time_dim].size:
+                    time_idx = 0
+                    print(f"Time index {time_idx} out of range. Using index 0 instead.")
+                
+                # Plot a slice at the specified time index
+                data = var.isel({time_dim: time_idx})
+                if 'lon' in var.dims and 'lat' in var.dims:
+                    # It's a 2D spatial variable
+                    data.plot(ax=ax)
+                    plt.title(f"{variable_name} at time index {time_idx}")
+                else:
+                    # Try to plot as a heatmap
+                    data.plot(ax=ax)
+                    plt.title(f"{variable_name} at time index {time_idx}")
+            else:
+                # It's already a 2D variable
+                var.plot(ax=ax)
+                plt.title(f"{variable_name}")
+        elif len(var.dims) == 1:
+            # 1D variable
+            var.plot(ax=ax)
+            plt.title(f"{variable_name}")
+        else:
+            # 0D variable (scalar)
+            plt.text(0.5, 0.5, f"{variable_name}: {var.values}", 
+                     horizontalalignment='center', verticalalignment='center')
+            plt.title(f"Scalar value: {variable_name}")
+        
+        # Add a colorbar if applicable
+        plt.tight_layout()
+        
+        return fig
+    except Exception as e:
+        print(f"Error plotting NetCDF file: {e}")
+        return None
+
+# Main execution part - this is what you need to modify for your specific files
+if __name__ == "__main__" or "__notebook__" in globals():
+    # Define the path to your NetCDF files
+    # Use one of these three approaches for Windows paths:
+    
+    # 1. Use raw string (prefix with r)
+    file_path = r"C:\Users\Prawiro\Downloads\IMACS Code\DELTA_TASMIN_NEXGDDP_INDO_SSP245_r1i1p1f1.nc"
+    
+    # 2. Use forward slashes (works on Windows too)
+    # file_path = "C:/Users/Prawiro/Downloads/IMACS Code/DELTA_TASMIN_NEXGDDP_INDO_SSP245_r1i1p1f1.nc"
+    
+    # 3. Use double backslashes (escape the backslash)
+    # file_path = "C:\\Users\\Prawiro\\Downloads\\IMACS Code\\DELTA_TASMIN_NEXGDDP_INDO_SSP245_r1i1p1f1.nc"
+    
+    # The second file path
+    file2_path = r"C:\Users\Prawiro\Downloads\IMACS Code\sstanom_clim2021-2023.nc"
+    
+    # Create output directory
+    os.makedirs("output", exist_ok=True)
+    
+    # Process first file
+    print(f"Processing file: {os.path.basename(file_path)}")
+    
+    # Convert to JSON
+    json_output_path = os.path.join("output", "temperature_data.json")
+    json_data = netcdf_to_json(file_path, json_output_path)
+    
+    # Create text summary
+    text_output_path = os.path.join("output", "temperature_data.txt")
+    text_summary = netcdf_to_text(file_path, text_output_path)
+    
+    # Create plot
+    fig = plot_netcdf(file_path)
+    if fig:
+        plt.savefig(os.path.join("output", "temperature_plot.png"))
+        plt.show()
+    
+    # Process second file
+    print(f"\nProcessing file: {os.path.basename(file2_path)}")
+    
+    # Convert to JSON
+    json_output_path2 = os.path.join("output", "sst_anomaly_data.json")
+    json_data2 = netcdf_to_json(file2_path, json_output_path2)
+    
+    # Create text summary
+    text_output_path2 = os.path.join("output", "sst_anomaly_data.txt")
+    text_summary2 = netcdf_to_text(file2_path, text_output_path2)
+    
+    # Create plot
+    fig2 = plot_netcdf(file2_path)
+    if fig2:
+        plt.savefig(os.path.join("output", "sst_anomaly_plot.png"))
+        plt.show()
+    
+    print("\nConversion complete!")
+    print(f"Output files saved to: {os.path.abspath('output')}")
