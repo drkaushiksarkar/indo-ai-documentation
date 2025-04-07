@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2025 Institute for Monitoring and Analysis of Climate Smart (IMACS)
+Copyright (c) 2025 Institute for Health Modeling and Climate Solutions (IMACS)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Climate Smart Indonesia
