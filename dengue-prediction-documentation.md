@@ -75,15 +75,24 @@
       background-color: #f8f9fa;
       border: 1px solid #e9ecef;
       border-radius: 4px;
-      padding: 5px;
+      padding: 15px;
       margin: 20px 0;
       overflow-x: auto;
     }
     .schematic-diagram pre {
-      background-color: transparent;
-      padding: 0;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.2;
+      white-space: pre;
       margin: 0;
-      border-radius: 0;
+      padding: 0;
+      background-color: transparent;
+    }
+    .architecture-description {
+      background-color: #f0f4f8;
+      border-left: 4px solid #4a7bab;
+      padding: 10px 15px;
+      margin: 15px 0;
     }
   </style>
 </head>
@@ -387,6 +396,196 @@
   </ol>
   <p>...and so on, where n₁ < n₂ < n₃ < ... < n.</p>
 
+  <p>This approach ensures that we never train on future data and validate on past data, which would lead to data leakage and overly optimistic performance estimates.</p>
+
+  <h2>Architecture</h2>
+
+  <h3>Basic VAE</h3>
+  
+  <div class="architecture-description">
+    <p>The standard VAE uses a simple fully-connected architecture:</p>
+    <pre>Input(28) → FC(112) → ReLU → 
+            ├─→ FC(11) [μ]
+            └─→ FC(11) [logvar]
+                  ↓
+                  z ∼ N(μ, exp(logvar))
+                  ↓
+           FC(112) → ReLU → FC(28) → Sigmoid → Output(28)</pre>
+  </div>
+
+  <h4>Schematic Diagram</h4>
+  
+  <div class="schematic-diagram">
+    <pre>                            ┌───────────────┐
+                            │     Input     │
+                            │  (28 features)│
+                            └───────┬───────┘
+                                    │
+                                    ▼
+                            ┌───────────────┐
+                            │   FC Layer    │
+                            │  (112 nodes)  │
+                            └───────┬───────┘
+                                    │
+                                    ▼
+                            ┌───────────────┐
+                            │     ReLU      │
+                            └┬─────────────┬┘
+                             │             │
+               ┌─────────────┘             └─────────────┐
+               │                                         │
+               ▼                                         ▼
+     ┌───────────────┐                         ┌───────────────┐
+     │   μ Layer     │                         │  logvar Layer │
+     │   (11 dim)    │                         │   (11 dim)    │
+     └───────┬───────┘                         └───────┬───────┘
+             │                                         │
+             └─────────────┐           ┌───────────────┘
+                           │           │
+                           ▼           ▼
+                       ┌───────────────────┐
+                       │  Reparameterize   │
+                       │  z = μ + ε·σ      │
+                       └────────┬──────────┘
+                                │
+                                ▼
+                       ┌───────────────────┐
+                       │    FC Decode      │
+                       │   (112 nodes)     │
+                       └────────┬──────────┘
+                                │
+                                ▼
+                       ┌───────────────────┐
+                       │       ReLU        │
+                       └────────┬──────────┘
+                                │
+                                ▼
+                       ┌───────────────────┐
+                       │    FC Output      │
+                       │   (28 features)   │
+                       └────────┬──────────┘
+                                │
+                                ▼
+                       ┌───────────────────┐
+                       │      Sigmoid      │
+                       └────────┬──────────┘
+                                │
+                                ▼
+                       ┌───────────────────┐
+                       │      Output       │
+                       │   (28 features)   │
+                       └───────────────────┘</pre>
+  </div>
+
+  <h3>Conditional Attention VAE</h3>
+  
+  <div class="architecture-description">
+    <p>The Conditional Attention VAE extends the basic VAE with country and year embeddings, positional encoding, and attention mechanisms:</p>
+    <pre>Input(28) → ProjectionLayer → SpatialAttention & TemporalAttention →
+CountryEmbedding(10) → YearEmbedding(10) + PositionalEncoding →
+[Concatenate] → FC(112) → LayerNorm → ReLU → Dropout →
+                ├─→ FC(11) [μ]
+                └─→ FC(11) [logvar]
+                      ↓
+                      z ∼ N(μ, exp(logvar))
+                      ↓
+CountryEmbedding(10) → YearEmbedding(10) + PositionalEncoding →
+[Concatenate with z] → FC(112) → LayerNorm → ReLU → FC(28) → Sigmoid → Output(28)</pre>
+  </div>
+
+  <h4>Schematic Diagram</h4>
+  
+  <div class="schematic-diagram">
+    <pre>            ┌───────────────┐    ┌───────────────┐    ┌───────────────┐
+            │     Input     │    │ Country Index │    │  Year Index   │
+            │  (28 features)│    │               │    │               │
+            └───────┬───────┘    └───────┬───────┘    └───────┬───────┘
+                    │                    │                    │
+                    ▼                    ▼                    ▼
+            ┌───────────────┐    ┌───────────────┐    ┌───────────────┐
+            │  Projection   │    │    Country    │    │     Year      │
+            │    Layer      │    │   Embedding   │    │   Embedding   │
+            └───────┬───────┘    └───────┬───────┘    └───────┬───────┘
+                    │                    │                    │
+                    ▼                    │                    ▼
+         ┌──────────┴──────────┐         │           ┌───────────────┐
+         │                     │         │           │  Positional   │
+         ▼                     ▼         │           │   Encoding    │
+┌───────────────┐    ┌───────────────┐   │           └───────┬───────┘
+│    Spatial    │    │    Temporal   │   │                   │
+│   Attention   │    │   Attention   │   │                   │
+└───────┬───────┘    └───────┬───────┘   │                   │
+         │                   │           │                   │
+         └─────────┬─────────┘           │                   │
+                   │                     │                   │
+                   ▼                     │                   │
+         ┌───────────────────┐           │                   │
+         │  Attended Input   │◄──────────┘                   │
+         └────────┬──────────┘                               │
+                  │                                          │
+                  │         ┌───────────────────────────────┐│
+                  │         │                               ││
+                  ├─────────┼───────────────────────────────┘│
+                  │         │                                │
+                  ▼         ▼                                ▼
+           ┌─────────────────────────────────────────────────┐
+           │                  Concatenate                     │
+           └────────────────────┬────────────────────────────┘
+                                │
+                                ▼
+                      ┌───────────────────┐
+                      │    FC Layer       │
+                      │   (112 nodes)     │
+                      └────────┬──────────┘
+                               │
+                               ▼
+                      ┌───────────────────┐
+                      │   Layer Norm      │
+                      └────────┬──────────┘
+                               │
+                               ▼
+                      ┌───────────────────┐
+                      │      ReLU         │
+                      └────────┬──────────┘
+                               │
+                               ▼
+                      ┌───────────────────┐
+                      │     Dropout       │
+                      └┬─────────────────┬┘
+                       │                 │
+              ┌────────┘                 └────────┐
+              │                                   │
+              ▼                                   ▼
+    ┌───────────────┐                   ┌───────────────┐
+    │   μ Layer     │                   │  logvar Layer │
+    │   (11 dim)    │                   │   (11 dim)    │
+    └───────┬───────┘                   └───────┬───────┘
+            │                                   │
+            └─────────────┐         ┌───────────┘
+                          │         │
+                          ▼         ▼
+                      ┌───────────────────┐
+                      │   Reparameterize  │
+                      │    z = μ + ε·σ    │
+                      └────────┬──────────┘
+                               │
+           ┌───────────────────┼────────────────────┐
+           │                   │                    │
+           ▼                   │                    ▼
+┌───────────────┐              │             ┌───────────────┐
+│    Country    │              │             │     Year      │
+│   Embedding   │              │             │   Embedding   │
+└───────┬───────┘              │             └───────┬───────┘
+        │                      │                     │
+        │                      │                     ▼
+        │                      │             ┌───────────────┐
+        │                      │             │  Positional   │
+        │                      │             │   Encoding    │
+        │                      │             └───────┬───────┘
+        │                      │                     │
+        ▼                      ▼                     ▼
+┌─────────────────────────────────────────────────────┐
+│
   <p>This approach ensures that we never train on future data and validate on past data, which would lead to data leakage and overly optimistic performance estimates.</p>
 
   <h2>Model Parameters</h2>
