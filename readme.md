@@ -222,7 +222,7 @@ python -m evaluation.predict --model models/saved_models/hybrid_model.h5 --data 
 
 ## Deployment
 
-See the [Deployment Guide](docs/deployment-guide.md) for detailed instructions on deploying the models in various environments.
+See the Deployment Guide below for detailed instructions on deploying the models in various environments.
 
 ### Docker Deployment
 
