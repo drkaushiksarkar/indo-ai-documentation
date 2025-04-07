@@ -71,6 +71,20 @@
       overflow-x: auto;
       margin: 20px 0;
     }
+    .schematic-diagram {
+      background-color: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 4px;
+      padding: 5px;
+      margin: 20px 0;
+      overflow-x: auto;
+    }
+    .schematic-diagram pre {
+      background-color: transparent;
+      padding: 0;
+      margin: 0;
+      border-radius: 0;
+    }
   </style>
 </head>
 <body>
