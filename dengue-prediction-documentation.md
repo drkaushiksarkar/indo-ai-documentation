@@ -131,17 +131,10 @@ The VAE is trained to minimize a loss function that consists of two components:
 1. Reconstruction loss: measures how well the decoder can reconstruct the input from the latent representation.
 2. KL divergence: measures how close the latent distribution is to a standard normal distribution.
 
-The VAE loss function is:
-
-$$\mathcal{L}(\theta, \phi; x) = \mathbb{E}_{q_\phi(z|x)}\left[\log p_\theta(x|z)\right] - D_{KL}(q_\phi(z|x) \parallel p(z))$$
-
-Where:
-- $p(z) = \mathcal{N}(0, I)$ is the prior distribution
-- $D_{KL}$ is the Kullback-Leibler divergence
 
 For a Gaussian latent distribution, the KL divergence has a closed-form solution:
 
-$$D_{KL}(q_\phi(z|x) \parallel p(z)) = \frac{1}{2} \sum_{j=1}^J \left(1 + \log \sigma_j^2 - \mu_j^2 - \sigma_j^2\right)$$
+$$D_{KL}(q_\phi(z|x) \parallel p(z)) = -\frac{1}{2} \sum_{j=1}^J \left(1 + \log \sigma_j^2 - \mu_j^2 - \sigma_j^2\right)$$
 
 Where $J$ is the dimensionality of the latent space.
 
