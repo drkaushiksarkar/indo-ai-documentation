@@ -239,11 +239,6 @@ $$\text{MSE} = \frac{1}{n} \sum_{i=1}^n (y_i - \hat{y}_i)^2$$
 **Root Mean Squared Error (RMSE):**
 $$\text{RMSE} = \sqrt{\frac{1}{n} \sum_{i=1}^n (y_i - \hat{y}_i)^2}$$
 
-**R-squared (R²):**
-$$R^2 = 1 - \frac{\sum_{i=1}^n (y_i - \hat{y}_i)^2}{\sum_{i=1}^n (y_i - \bar{y})^2}$$
-
-**Symmetric Mean Absolute Percentage Error (SMAPE):**
-$$\text{SMAPE} = \frac{100\%}{n} \sum_{i=1}^n \frac{2 |y_i - \hat{y}_i|}{|y_i| + |\hat{y}_i|}$$
 
 **Brier Score:**
 $$\text{Brier} = \frac{1}{n} \sum_{i=1}^n (y_i - \hat{y}_i)^2$$
